@@ -1,0 +1,21 @@
+#!/bin/sh
+
+dir="`pwd`"
+cd "$(dirname "$0")"
+cd ..
+root="$(pwd)"
+cd "${dir}"
+
+mkdir -p sol/lib
+mkdir -p sol/obj
+mkdir -p sol/log
+mkdir -p sol/tmp
+
+lumen_root="sol/lib/lumen-sctb-github.com/master"
+if [ ! -d "${lumen_root}" ]; then git clone https://github.com/sctb/lumen "${lumen_root}"; fi
+lumen="${lumen_root}/bin/lumen"
+if [ ! -e "${lumen}" ]; then 1>&2 echo "Could not locate lumen" && exit 1; fi
+
+wrap="$(which rlwrap)"
+exec "${wrap}" "${lumen}" "$@"
+
