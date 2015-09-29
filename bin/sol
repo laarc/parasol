@@ -6,8 +6,10 @@ cd ..
 root="$(pwd)"
 cd "${dir}"
 
+mkdir -p sol/bin
 mkdir -p sol/lib
 mkdir -p sol/obj
+mkdir -p sol/etc
 mkdir -p sol/log
 mkdir -p sol/tmp
 
