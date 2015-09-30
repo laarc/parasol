@@ -147,7 +147,7 @@ installer again:
     sudo chmod 775 #{SOL_USRFIX}
 EOABORT
 
-ohai "This script will install sol to #{SOL_USRFIX}"
+ohai "This script will install Parasol to #{SOL_USRFIX}"
 puts "  #{SOL_PREFIX}/bin/sol"
 puts "  #{SOL_PREFIX}/lib/..."
 
@@ -253,7 +253,7 @@ end
 
 ohai "Next steps"
 puts
-ohai "Install the Sol dependencies:"
+ohai "Install the Parasol dependencies:"
 
 # #{Tty.white}OS X:#{Tty.reset}
 puts <<-EOS
