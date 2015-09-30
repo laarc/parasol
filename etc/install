@@ -147,7 +147,7 @@ installer again:
     sudo chmod 775 #{SOL_USRFIX}
 EOABORT
 
-ohai "This script will install Sol to #{SOL_USRFIX}"
+ohai "This script will install sol to #{SOL_USRFIX}"
 puts "  #{SOL_PREFIX}/bin/sol"
 puts "  #{SOL_PREFIX}/lib/..."
 
@@ -313,5 +313,5 @@ if STDIN.tty?
 end
 
 puts ''
-puts 'Run `sol help` to get started'
+puts 'Run `sol -h` to get started'
 
