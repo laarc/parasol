@@ -58,7 +58,7 @@ def system *args
 end
 
 def run *args
-  if ENV["VERBOSE"] then
+  if ENV["VERBOSE"]
     ohai *args
   end
   Kernel.system(*args)
@@ -155,7 +155,7 @@ installer again:
     sudo chmod 775 #{SOL_USRFIX}
 EOABORT
 
-if updating? then
+if updating?
   ohai "Updating Parasol at #{SOL_USRFIX}"
 else
   ohai "This script will install Parasol to #{SOL_USRFIX}"
@@ -185,7 +185,7 @@ unless chgrps.empty?
   puts(*chgrps)
 end
 
-unless updating? then
+unless updating?
   if STDIN.tty?
     abort unless wait_for_user == "\n"
   end
@@ -222,7 +222,7 @@ else
   puts "Install #{Tty.white}Xcode#{Tty.reset}: https://developer.apple.com/xcode" unless File.exist? "/usr/bin/cc"
 end
 
-if updating? then
+if updating?
   ohai "Updating #{SOL_USRFIX} ..."
 else
   ohai "Fetching #{REPOSITORY} ..."
@@ -256,19 +256,19 @@ end
 
 # ohai "Installation successful"
 
-if freebsd?
-  libs = "sudo pkg install luajit rlwrap" 
-elsif linux?
-  if which "apt-get"
-    libs = "sudo apt-get install build-essential luajit luajit-devel rlwrap" if linux?
-  else
-    libs = <<-end
-sudo yum groupinstall 'Development Tools'
-sudo yum install luajit luajit-devel rlwrap
+def libs
+  return "brew install  rlwrap  lua luajit  node npm" if mac?
+  return "sudo pkg install  rlwrap  lua luajit  node npm"  if freebsd?
+  if linux?
+    if which "apt-get"
+      return "sudo apt-get install build-essential  rlwrap  lua luajit luajit-devel  node npm" if linux?
+    else
+      return <<-end
+  sudo yum groupinstall 'Development Tools'
+  sudo yum install  rlwrap  luajit luajit-devel  node npm
+      end
     end
   end
-elsif mac?
-  libs = "brew install luajit rlwrap"
 end
 
 # ohai "Next steps"
@@ -325,7 +325,7 @@ end
 
 if STDIN.tty?
   unless in_path?
-    # if ["Y", "y"].include? wait_for_user "Want me to add #{SOL_USRFIX}/bin to your PATH for you? (Y/n): "
+    # if ["Y", "y"].include? 
     unless ["N", "n"].include? wait_for_user "Want me to add #{SOL_USRFIX}/bin to your PATH for you? (Y/n): "
       puts exports
       system exports
@@ -337,45 +337,42 @@ end
 # fetch Lumen.
 run "#{SOL_PREFIX}/bin/sol", "-e", ""
 
-puts
-
-
 
 def open_term
-  if mac? then
+  if mac?
     #
     # Credit to David Moles: http://stackoverflow.com/a/28373404
     #
     term = <<-'end'
-  echo '
-  on run argv
-    if length of argv is equal to 0
-      set command to ""
-    else
-      set command to item 1 of argv
-    end if
+echo '
+on run argv
+  if length of argv is equal to 0
+    set command to ""
+  else
+    set command to item 1 of argv
+  end if
 
-    if length of argv is greater than 1
-      set profile to item 2 of argv
-      runWithProfile(command, profile)
-    else
-      runSimple(command)
-    end if
-  end run
+  if length of argv is greater than 1
+    set profile to item 2 of argv
+    runWithProfile(command, profile)
+  else
+    runSimple(command)
+  end if
+end run
 
-  on runSimple(command)
-    tell application "Terminal"
-      activate
-      set newTab to do script(command)
-    end tell
-    return newTab
-  end runSimple
+on runSimple(command)
+  tell application "Terminal"
+    activate
+    set newTab to do script(command)
+  end tell
+  return newTab
+end runSimple
 
-  on runWithProfile(command, profile)
-    set newTab to runSimple(command)
-    tell application "Terminal" to set current settings of newTab to (first settings set whose name is profile)
-  end runWithProfile
-  ' | osascript - "cat <""<'      ' > /dev/null
+on runWithProfile(command, profile)
+  set newTab to runSimple(command)
+  tell application "Terminal" to set current settings of newTab to (first settings set whose name is profile)
+end runWithProfile
+' | osascript - "cat <""<'      ' > /dev/null
 
 
     Type \"sol\" to get a Lumen REPL.
@@ -384,19 +381,21 @@ def open_term
 
     Tutorial: https://github.com/sctb/lumen 
 
+
       " > /dev/null
     end
     `#{term}`
   end
 end
 
-if updating? then
+puts
+if updating?
   puts 'Parasol updated.'
 else
   puts 'Parasol installed.'
 end
 puts
-if in_path? then
+if in_path?
   puts 'Type `sol -h` for help or `sol` to get a REPL.'
 else
   puts 'Open a new terminal window, then type `sol -h` for help, or `sol` to get a REPL.'
