@@ -18,7 +18,6 @@ end
 
 SOL_USRFIX = "~/.sol"
 SOL_VARFIX = "$HOME/.sol"
-SOL_LOWFIX = "$home/.sol"
 SOL_PREFIX = "#{ENV['HOME']}/.sol"
 REPOSITORY="https://github.com/laarc/sol"
 
@@ -293,7 +292,7 @@ unless in_path?
   end
   exports = <<-end if freebsd?
     echo #{shellquote "export PATH=\"$PATH:#{SOL_VARFIX}/bin\""} >> ~/.profile
-    echo #{shellquote "set path = ($path #{SOL_LOWFIX}/bin)"} >> ~/.cshrc
+    echo #{shellquote "set path = ($path #{SOL_VARFIX.downcase}/bin)"} >> ~/.cshrc
   end
   puts "#{exports}"
   puts <<-end
