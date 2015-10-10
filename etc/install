@@ -257,15 +257,15 @@ end
 # ohai "Installation successful"
 
 def libs
-  return "brew install  rlwrap  lua luajit  node npm" if mac?
-  return "sudo pkg install  rlwrap  lua luajit  node npm"  if freebsd?
+  return     "brew install  rlwrap  lua luajit  node npm" if mac?
+  return "sudo pkg install  rlwrap  lua51 luajit  node npm"  if freebsd?
   if linux?
     if which "apt-get"
-      return "sudo apt-get install build-essential  rlwrap  lua luajit luajit-devel  node npm" if linux?
+      return "sudo apt-get install  build-essential  rlwrap  lua luajit luajit-devel  node npm" if linux?
     else
       return <<-end
-  sudo yum groupinstall 'Development Tools'
-  sudo yum install  rlwrap  luajit luajit-devel  node npm
+sudo yum groupinstall 'Development Tools'
+sudo yum install  rlwrap  lua luajit luajit-devel  node npm
       end
     end
   end
