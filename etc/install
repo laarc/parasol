@@ -21,6 +21,11 @@ SOL_VARFIX = "$HOME/.sol"
 SOL_PREFIX = "#{ENV['HOME']}/.sol"
 REPOSITORY="https://github.com/laarc/sol"
 
+Installing = Dir["#{SOL_PREFIX}/.git/*"].empty?
+def updating?
+  not Installing
+end
+
 module Tty extend self
   def blue; bold 34; end
   def white; bold 39; end
@@ -40,7 +45,8 @@ class Array
 end
 
 def ohai *args
-  puts "#{Tty.blue}==>#{Tty.white} #{args.shell_s}#{Tty.reset}"
+  puts "\n"
+  puts "==>#{Tty.blue} #{args.shell_s}#{Tty.reset}"
 end
 
 def warn warning
@@ -49,6 +55,13 @@ end
 
 def system *args
   abort "Failed during: #{args.shell_s}" unless Kernel.system(*args)
+end
+
+def run *args
+  if ENV["VERBOSE"] then
+    ohai *args
+  end
+  Kernel.system(*args)
 end
 
 def which prog
@@ -70,10 +83,6 @@ def getc  # NOTE only tested on OS X
   end
 ensure
   system "/bin/stty -raw echo"
-end
-
-def ohai *args
-  puts "#{Tty.blue}==>#{Tty.white} #{args.shell_s}#{Tty.reset}"
 end
 
 def wait_for_user *args
@@ -146,7 +155,11 @@ installer again:
     sudo chmod 775 #{SOL_USRFIX}
 EOABORT
 
-ohai "This script will install Parasol to #{SOL_USRFIX}"
+if updating? then
+  ohai "Updating Parasol at #{SOL_USRFIX}"
+else
+  ohai "This script will install Parasol to #{SOL_USRFIX}"
+end
 puts "  #{SOL_PREFIX}/bin/sol"
 puts "  #{SOL_PREFIX}/lib/..."
 
@@ -172,8 +185,10 @@ unless chgrps.empty?
   puts(*chgrps)
 end
 
-if STDIN.tty?
-  abort unless wait_for_user == "\n"
+unless updating? then
+  if STDIN.tty?
+    abort unless wait_for_user == "\n"
+  end
 end
 
 if linux?
@@ -207,13 +222,17 @@ else
   puts "Install #{Tty.white}Xcode#{Tty.reset}: https://developer.apple.com/xcode" unless File.exist? "/usr/bin/cc"
 end
 
-ohai "Fetching sol..."
+if updating? then
+  ohai "Updating #{SOL_USRFIX} ..."
+else
+  ohai "Fetching #{REPOSITORY} ..."
+end
 Dir.chdir SOL_PREFIX do
   if git
     # we do it in four steps to avoid merge errors when reinstalling
-    system git, "init", "-q"
-    system git, "remote", "remove", "origin"
-    system git, "remote", "add", "origin", REPOSITORY
+    run git, "init", "-q"
+    run git, "remote", "remove", "origin"
+    run git, "remote", "add", "origin", REPOSITORY
 
     args = git, "fetch", "origin", "master:refs/remotes/origin/master", "-n"
     args << "--depth=1" if ARGV.include? "--fast"
@@ -230,11 +249,12 @@ Dir.chdir SOL_PREFIX do
   end
 end
 
+InPath = ENV['PATH'].split(':').include? "#{SOL_PREFIX}/bin"
 def in_path?
-  ENV['PATH'].split(':').include? "#{SOL_PREFIX}/bin"
+  InPath
 end
 
-ohai "Installation successful"
+# ohai "Installation successful"
 
 if freebsd?
   libs = "sudo pkg install luajit rlwrap" 
@@ -251,9 +271,10 @@ elsif mac?
   libs = "brew install luajit rlwrap"
 end
 
-ohai "Next steps"
+# ohai "Next steps"
 puts
-ohai "Install the Parasol dependencies:"
+ohai "Install the dependencies:"
+puts
 
 # #{Tty.white}OS X:#{Tty.reset}
 puts <<-EOS
@@ -304,7 +325,8 @@ end
 
 if STDIN.tty?
   unless in_path?
-    if ["Y", "y"].include? wait_for_user "Want me to add #{SOL_USRFIX}/bin to your PATH? (y/N): "
+    # if ["Y", "y"].include? wait_for_user "Want me to add #{SOL_USRFIX}/bin to your PATH for you? (Y/n): "
+    unless ["N", "n"].include? wait_for_user "Want me to add #{SOL_USRFIX}/bin to your PATH for you? (Y/n): "
       puts exports
       system exports
       # system ". #{profile}"
@@ -312,6 +334,75 @@ if STDIN.tty?
   end
 end
 
-puts ''
-puts 'Run `sol -h` to get started'
+# fetch Lumen.
+run "#{SOL_PREFIX}/bin/sol", "-e", ""
+
+puts
+
+
+
+def open_term
+  if mac? then
+    #
+    # Credit to David Moles: http://stackoverflow.com/a/28373404
+    #
+    term = <<-'end'
+  echo '
+  on run argv
+    if length of argv is equal to 0
+      set command to ""
+    else
+      set command to item 1 of argv
+    end if
+
+    if length of argv is greater than 1
+      set profile to item 2 of argv
+      runWithProfile(command, profile)
+    else
+      runSimple(command)
+    end if
+  end run
+
+  on runSimple(command)
+    tell application "Terminal"
+      activate
+      set newTab to do script(command)
+    end tell
+    return newTab
+  end runSimple
+
+  on runWithProfile(command, profile)
+    set newTab to runSimple(command)
+    tell application "Terminal" to set current settings of newTab to (first settings set whose name is profile)
+  end runWithProfile
+  ' | osascript - "cat <""<'      ' > /dev/null
+
+
+    Type \"sol\" to get a Lumen REPL.
+
+    Type \"sol -h\" to see usage info.
+
+    Tutorial: https://github.com/sctb/lumen 
+
+      " > /dev/null
+    end
+    `#{term}`
+  end
+end
+
+if updating? then
+  puts 'Parasol updated.'
+else
+  puts 'Parasol installed.'
+end
+puts
+if in_path? then
+  puts 'Type `sol -h` for help or `sol` to get a REPL.'
+else
+  puts 'Open a new terminal window, then type `sol -h` for help, or `sol` to get a REPL.'
+  open_term unless ENV["NOTERM"]
+end
+puts
+puts 'Tutorial: https://github.com/sctb/lumen'
+puts
 
