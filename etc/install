@@ -132,11 +132,11 @@ Dir.chdir "/usr"
 
 ####################################################################### script
 abort "Don't run this as root!" if Process.uid == 0
-abort <<-EOABORT unless Dir["#{SOL_PREFIX}/.git/*"].empty?
-It appears Parasol is already installed. If your intent is to reinstall you
-should do the following before running this installer again:
-    rm -rf #{SOL_USRFIX}
-EOABORT
+# abort <<-EOABORT unless Dir["#{SOL_PREFIX}/.git/*"].empty?
+# It appears Parasol is already installed. If your intent is to reinstall you
+# should do the following before running this installer again:
+#     rm -rf #{SOL_USRFIX}
+# EOABORT
 # Tests will fail if the prefix exists, but we don't have execution
 # permissions. Abort in this case.
 abort <<-EOABORT if File.directory? SOL_PREFIX and not File.executable? SOL_PREFIX
@@ -212,6 +212,7 @@ Dir.chdir SOL_PREFIX do
   if git
     # we do it in four steps to avoid merge errors when reinstalling
     system git, "init", "-q"
+    system git, "remote", "remove", "origin"
     system git, "remote", "add", "origin", REPOSITORY
 
     args = git, "fetch", "origin", "master:refs/remotes/origin/master", "-n"
